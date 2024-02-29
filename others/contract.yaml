@@ -1,0 +1,148 @@
+openapi: 3.0.0
+info:
+  contact: { }
+  title: "Account Vault"
+  version: "1.0.0"
+servers:
+  - description: LOCAL
+    url: http://localhost:8080/api
+paths:
+  /auth/signup:
+    post:
+      description: Create new account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+        required: true
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      tags:
+        - Auth
+  /auth/login:
+    post:
+      description: Login to existing account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "201":
+          description: Success
+          headers:
+            Set-Cookie:
+              description: a JWT token
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      tags:
+        - Auth
+  /auth/logout:
+    post:
+      description: Logout
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Success
+      tags:
+        - Auth
+      
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - name
+        - password1
+        - password2
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        password1:
+          type: string
+        password2:
+          type: string
+    SignupResponse:
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: integer
+          format: int
+        email:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: token with format "Bearer TOKEN_VALUE"
