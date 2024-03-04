@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MaxLength, Length, IsStrongPassword } from "class-validator";
+import { IsEmail, IsNotEmpty, MaxLength, IsStrongPassword } from "class-validator";
 
 export class SignupReqDto {
     @IsEmail()
@@ -26,19 +26,5 @@ export class SignupReqDto {
         this.name = name;
         this.password1 = password1;
         this.password2 = password2;
-    }
-}
-
-export class SignupResDto {
-    id: number;
-    email: string;
-    name: string;
-    createdAt: Date;
-    
-    constructor(id: number, email: string, name: string, createdAt: Date) {
-        this.email = email;
-        this.name = name;
-        this.id = id;
-        this.createdAt = createdAt;
     }
 }

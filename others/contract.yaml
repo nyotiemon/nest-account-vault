@@ -20,9 +20,9 @@ paths:
         "201":
           description: Success
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: "#/components/schemas/SignupResponse"
+                type: string
         "400":
           description: Bad Request
           content:
@@ -103,23 +103,6 @@ components:
           type: string
         password2:
           type: string
-    SignupResponse:
-      type: object
-      required:
-        - id
-        - name
-        - email
-      properties:
-        id:
-          type: integer
-          format: int
-        email:
-          type: string
-        name:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
 
     LoginRequest:
       type: object
@@ -135,10 +118,10 @@ components:
     ErrorResponse:
       type: object
       properties:
-        errors:
-          type: array
-          items:
-            type: string
+        statusCode:
+          type: number
+        message:
+          type: string
 
   securitySchemes:
     bearerAuth:

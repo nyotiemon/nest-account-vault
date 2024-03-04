@@ -1,18 +1,24 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupReqDto } from './dto/signup.dto';
+import { Account } from './entities/account.entity';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly service: AuthService
+  ) {}
 
   @Post('signup')
-  create(@Body() signupReqDto: SignupReqDto) {
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() request: SignupReqDto) {
     // verify p1 p2 match
-    if (signupReqDto.password1 != signupReqDto.password2)  {
+    if (request.password1 != request.password2) {
       throw new HttpException('passwords does not matched', HttpStatus.BAD_REQUEST);
     }
 
-    return this.authService.signup(signupReqDto);
+    const res = await this.service.signup(
+      Account.NewAccount(request.email, request.name, request.password1));
+    return res.payload;
   }
 }
