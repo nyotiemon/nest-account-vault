@@ -37,4 +37,8 @@ export class Account {
 
         return newAccount
     }
+
+    async ComparePassword(plainPassword: string): Promise<boolean> {
+        return bcrypt.compare(plainPassword, this.password)
+    }
 }

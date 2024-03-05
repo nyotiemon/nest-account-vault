@@ -3,11 +3,13 @@ import { Account } from './entities/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseResponse } from '../utils/baseresponse';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Account) private readonly repo: Repository<Account>
+    @InjectRepository(Account) private readonly repo: Repository<Account>,
+    private readonly jwt: JwtService,
   ) {}
 
   /**
@@ -34,5 +36,35 @@ export class AuthService {
 
     response.payload = 'account created';
     return response;
+  }
+
+  /**
+   * login will be called by LocalStrategy
+   * @param email 
+   * @param password 
+   * @returns Account entity
+   */
+  async login(email: string, password: string): Promise<Account | null> {
+    // verify login request with db data
+    let account = await this.repo.findOne({where: {email: email}})
+    if (account == null) {
+      return null;
+    }
+
+    let valid = await account.ComparePassword(password);
+    if (!valid) {
+      return null;
+    }
+
+    return account;
+  }
+
+  /**
+   * Sign a payload and return signed token
+   * @param payload a plain object
+   * @returns token string
+   */
+  async signJwtPayload(payload: object): Promise<string> {
+    return this.jwt.sign(payload);
   }
 }

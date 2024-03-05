@@ -11,7 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRoot({
       type: 'mysql',
       url: process.env.PROD_DB_URL,
-      ssl: { rejectUnauthorized: false },
+      ssl: { rejectUnauthorized: process.env.NODE_ENV === 'production' ? true : false },
       autoLoadEntities: true,
     }), 
     AuthModule

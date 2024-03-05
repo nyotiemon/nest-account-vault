@@ -47,7 +47,7 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
         required: true
       responses:
-        "201":
+        "202":
           description: Success
           headers:
             Set-Cookie:
