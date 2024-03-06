@@ -84,6 +84,26 @@ paths:
           description: Success
       tags:
         - Auth
+  /auth/google/login:
+    get:
+      description: login with google account
+      security:
+        - oAuth2: []
+      responses:
+        "302":
+          description: Authenticate to google
+      tags:
+        - Auth
+  /auth/google/callback:
+    get:
+      description: callback url for google to use
+      security:
+        - oAuth2: []
+      responses:
+        "308":
+          description: Success will redirect to dashboard
+      tags:
+        - Auth
       
 components:
   schemas:
@@ -129,3 +149,12 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: token with format "Bearer TOKEN_VALUE"
+    oAuth2:
+      type: oauth2
+      description: google oAuth2.0
+      flows:
+        implicit:
+          authorizationUrl: /api/auth/google/login
+          scopes:
+            email: get your email address
+            profile: get your public profile information
