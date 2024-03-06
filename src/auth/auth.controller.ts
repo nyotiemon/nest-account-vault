@@ -38,6 +38,9 @@ export class AuthController {
     let payload = {id: account.id, email: account.email, name: account.name, verified: account.verified != null};
     let token = await this.service.signJwtPayload(payload);
 
+    // increase login count before ending
+    this.service.increaseLoginCount(account);
+
     response.setHeader('Authorization', `Bearer ${token}`);
     response.cookie('token', token, {
       httpOnly: true,

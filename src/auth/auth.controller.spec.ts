@@ -19,6 +19,7 @@ describe('AuthController', () => {
           useValue: {
             signup: jest.fn().mockResolvedValue(BaseResponse.CreateAsSuccess<string>(201, 'account created')), 
             signJwtPayload: jest.fn().mockResolvedValue('signedtoken'),
+            increaseLoginCount: jest.fn(),
           }
         },
       ],

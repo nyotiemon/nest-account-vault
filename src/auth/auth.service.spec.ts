@@ -13,6 +13,7 @@ describe('AuthService', () => {
 
   let account = Account.NewAccount('test@abc.com', 'nametest', 'plainpwd');
   account.id = 1;
+  account.loginCount = 1;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,6 +24,7 @@ describe('AuthService', () => {
           useValue: {
             findOne: jest.fn().mockResolvedValue(account),
             save: jest.fn().mockResolvedValue(account),
+            update: jest.fn(),
           }
         },
         {
@@ -89,6 +91,13 @@ describe('AuthService', () => {
     it('should return null on wrong password', async () => {
       await expect(service.login(email, 'password')).resolves.toBeNull();
     });
+  });
+
+  it('should increment loginCount', async () => {
+    const repoUpdate = jest.spyOn(repo, 'update');
+    await service.increaseLoginCount(account);
+    expect(repoUpdate).toHaveBeenCalledTimes(1);
+    expect(repoUpdate).toHaveBeenCalledWith(1, {loginCount: 2});
   });
   
   it('should sign a new JWT', async () => {

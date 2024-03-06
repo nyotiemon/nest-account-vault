@@ -60,6 +60,14 @@ export class AuthService {
   }
 
   /**
+   * update db increment loginCount value by 1 of the given account
+   * @param account 
+   */
+  async increaseLoginCount(account: Account) {
+    this.repo.update(account.id, {loginCount: account.loginCount+1});
+  }
+
+  /**
    * Sign a payload and return signed token
    * @param payload a plain object
    * @returns token string
