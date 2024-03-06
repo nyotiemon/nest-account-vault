@@ -60,10 +60,17 @@ describe('AuthController', () => {
       const res = createResponse();
       await controller.login(req, res);
       expect(res.getHeader('Authorization')).toBe('Bearer signedtoken');
-      expect(res.cookies).toHaveProperty('token');
+      expect(res.cookies).toHaveProperty(controller.TOKEN_KEY);
       expect(res.statusCode).toEqual(HttpStatus.PERMANENT_REDIRECT);
       expect(spySignJwt).toHaveBeenCalledTimes(1);
       expect(spyIncLogin).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('clear token in cookie on logout', async() => {
+    const res = createResponse();
+    await controller.logout(res);
+    expect(res.cookies.token.options.expires).toEqual(new Date(1));
+    expect(res.statusCode).toEqual(HttpStatus.PERMANENT_REDIRECT);
   });
 });

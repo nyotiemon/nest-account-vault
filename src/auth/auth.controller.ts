@@ -5,12 +5,17 @@ import { SignupReqDto } from './dto/signup.dto';
 import { Account } from './entities/account.entity';
 import { LocalAuthGuard } from './guardstrategies/local';
 import { GoogleAuthGuard } from './guardstrategies/google';
+import { JwtAuthGuard } from './guardstrategies/jwt';
 
 @Controller('auth')
 export class AuthController {
+  TOKEN_KEY: string;
+
   constructor(
     private readonly service: AuthService,
-  ) {}
+  ) {
+    this.TOKEN_KEY = 'token';
+  }
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
@@ -40,7 +45,7 @@ export class AuthController {
     await this.service.increaseLoginCount(account);
 
     response.setHeader('Authorization', `Bearer ${token}`);
-    response.cookie('token', token, {
+    response.cookie(this.TOKEN_KEY, token, {
       httpOnly: true,
       signed: true,
       sameSite: 'strict',
@@ -74,4 +79,12 @@ export class AuthController {
     await this.successLoginSequence(request, response);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('logout')
+  logout(
+    @Res({ passthrough: true }) response: Response
+  ) {
+    response.clearCookie(this.TOKEN_KEY);
+    response.redirect(HttpStatus.PERMANENT_REDIRECT, '/');
+  }
 }
