@@ -70,26 +70,55 @@ describe('AuthService', () => {
     });
   });
 
-  describe('login', () => {
+  describe('local login', () => {
     const email = 'test@abc.com';
     const password = 'plainpwd';
 
     it('should success', async () => {
       const repoFindOne = jest.spyOn(repo, 'findOne');
 
-      const loginResult = await service.login(email, password);
-      expect(loginResult.email).toEqual(account.email);
+      const loginResult = await service.loginLocal(email, password);
+      expect(loginResult.email).toEqual(email);
       expect(repoFindOne).toHaveBeenCalledWith({ where: { email: email } });
     });
 
     it('should return null on unregistered email', async () => {
       const repoFindOne = jest.spyOn(repo, 'findOne').mockResolvedValue(null);
-      await expect(service.login('test', 'password')).resolves.toBeNull();
+      await expect(service.loginLocal('test', 'password')).resolves.toBeNull();
       expect(repoFindOne).toHaveBeenCalledWith({ where: { email: 'test' } });
     });
 
     it('should return null on wrong password', async () => {
-      await expect(service.login(email, 'password')).resolves.toBeNull();
+      await expect(service.loginLocal(email, 'password')).resolves.toBeNull();
+    });
+  });
+
+  describe('google login', () => {
+    const email = 'test@abc.com';
+    const profile = {id: 'googleid123', name: {familyName: 'fam', givenName: 'test'}, emails: [{value: email}]};
+
+    it('should create on unregistered', async () => {
+      const spyDbFindOne = jest.spyOn(repo, 'findOne').mockResolvedValue(null);
+      const spyDbSave = jest.spyOn(repo, 'save').mockResolvedValue(Account.NewGoogleAccount(profile.id, email, 'fam test'));
+
+      const loginResult = await service.loginGoogle(profile);
+      expect(loginResult).toBeDefined();
+      expect(loginResult).toBeInstanceOf(Account);
+      expect(loginResult.name).toEqual('fam test');
+      expect(spyDbFindOne).toHaveBeenCalledWith({ where: { email: email } });
+      expect(spyDbSave).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not create on registered', async () => {
+      const spyDbFindOne = jest.spyOn(repo, 'findOne');
+      const spyDbSave = jest.spyOn(repo, 'save');
+
+      const loginResult = await service.loginGoogle(profile);
+      expect(loginResult).toBeDefined();
+      expect(loginResult).toBeInstanceOf(Account);
+      expect(loginResult.email).toEqual(email);
+      expect(spyDbFindOne).toHaveBeenCalledWith({ where: { email: email } });
+      expect(spyDbSave).toHaveBeenCalledTimes(0);
     });
   });
 

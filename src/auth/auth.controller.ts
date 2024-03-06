@@ -1,9 +1,10 @@
-import { Controller, Post, Body, HttpException, HttpStatus, HttpCode, UseGuards, Res, Req } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, HttpCode, UseGuards, Res, Req, Get } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupReqDto } from './dto/signup.dto';
 import { Account } from './entities/account.entity';
 import { LocalAuthGuard } from './guardstrategies/local';
+import { GoogleAuthGuard } from './guardstrategies/google';
 
 @Controller('auth')
 export class AuthController {
@@ -24,14 +25,11 @@ export class AuthController {
     return res.payload;
   }
 
-  @UseGuards(LocalAuthGuard)
-  @Post('login')
-  @HttpCode(HttpStatus.ACCEPTED)
-  async login(
-    @Req() request: Request, 
-    @Res({ passthrough: true }) response: Response
+  async successLoginSequence(
+    request: Request, 
+    response: Response
   ) {
-    // req.user is from LocalStrategy.validate()
+    // req.user is from Strategy.validate()
     let account = request.user as Account;
     
     // generate JWT token
@@ -39,7 +37,7 @@ export class AuthController {
     let token = await this.service.signJwtPayload(payload);
 
     // increase login count before ending
-    this.service.increaseLoginCount(account);
+    await this.service.increaseLoginCount(account);
 
     response.setHeader('Authorization', `Bearer ${token}`);
     response.cookie('token', token, {
@@ -48,5 +46,32 @@ export class AuthController {
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
     });
+    
+    // redirect to dashboard
+    response.redirect(HttpStatus.PERMANENT_REDIRECT, '/');
   }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async login(
+    @Req() request: Request, 
+    @Res({ passthrough: true }) response: Response
+  ) {
+    await this.successLoginSequence(request, response);
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  async googleLogin() {}
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(
+    @Req() request: Request, 
+    @Res({ passthrough: true }) response: Response
+  ) {
+    await this.successLoginSequence(request, response);
+  }
+
 }

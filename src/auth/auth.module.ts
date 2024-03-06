@@ -4,8 +4,9 @@ import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
 import { JwtModule } from '@nestjs/jwt';
-import { LocalStrategy } from './guardstrategies/local';
 import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './guardstrategies/local';
+import { GoogleStrategy } from './guardstrategies/google';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { PassportModule } from '@nestjs/passport';
     })
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy],
+  providers: [AuthService, LocalStrategy, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

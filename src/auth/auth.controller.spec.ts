@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SignupReqDto } from './dto/signup.dto';
-import { HttpException } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { BaseResponse } from '../utils/baseresponse';
 import { createRequest, createResponse } from 'node-mocks-http';
 
@@ -51,15 +51,19 @@ describe('AuthController', () => {
     });
   });
 
-  describe('login', () => {
-    it('should add token to response', async() => {
-      // const mockRequest = { user: { id: 1, email: 'email', name: 'name', verified: false } } as unknown as Request;
+  describe('verified login', () => {
+    it('should do correct sequence', async() => {
+      let spySignJwt = jest.spyOn(service, 'signJwtPayload');
+      let spyIncLogin = jest.spyOn(service, 'increaseLoginCount');
+
       const req = createRequest({user: { id: 1, email: 'email', name: 'name', verified: null }});
       const res = createResponse();
-  
       await controller.login(req, res);
       expect(res.getHeader('Authorization')).toBe('Bearer signedtoken');
       expect(res.cookies).toHaveProperty('token');
+      expect(res.statusCode).toEqual(HttpStatus.PERMANENT_REDIRECT);
+      expect(spySignJwt).toHaveBeenCalledTimes(1);
+      expect(spyIncLogin).toHaveBeenCalledTimes(1);
     });
   });
 });

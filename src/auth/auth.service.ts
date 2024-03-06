@@ -1,9 +1,10 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { Account } from './entities/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { BaseResponse } from '../utils/baseresponse';
-import { JwtService } from '@nestjs/jwt';
+import { Account } from './entities/account.entity';
+import { Profile } from 'passport-google-oauth20';
 
 @Injectable()
 export class AuthService {
@@ -39,13 +40,12 @@ export class AuthService {
   }
 
   /**
-   * login will be called by LocalStrategy
+   * loginLocal will be called by LocalStrategy
    * @param email 
    * @param password 
    * @returns Account entity
    */
-  async login(email: string, password: string): Promise<Account | null> {
-    // verify login request with db data
+  async loginLocal(email: string, password: string): Promise<Account | null> {
     let account = await this.repo.findOne({where: {email: email}})
     if (account == null) {
       return null;
@@ -54,6 +54,24 @@ export class AuthService {
     let valid = await account.ComparePassword(password);
     if (!valid) {
       return null;
+    }
+
+    return account;
+  }
+
+  /**
+   * loginGoogle will be called by GoogleStrategy
+   * @param googleProfile 
+   * @returns guaranteed Account entity
+   */
+  async loginGoogle(googleProfile: Profile): Promise<Account> {
+    const { id, name, emails } = googleProfile;
+
+    let account = await this.repo.findOne({where: {email: emails[0].value}})
+    if (account == null) {
+      account = await this.repo.save(
+        Account.NewGoogleAccount(id, emails[0].value, name.familyName + ' ' + name.givenName)
+      );
     }
 
     return account;

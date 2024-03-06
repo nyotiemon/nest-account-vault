@@ -35,10 +35,19 @@ export class Account {
         const hashedPassword = bcrypt.hashSync(plainPassword, 10);
         newAccount.password = hashedPassword;
 
-        return newAccount
+        return newAccount;
+    }
+
+    static NewGoogleAccount(googleId: string, email: string, name: string): Account {
+        var newAccount = new Account();
+        newAccount.googleId = googleId;
+        newAccount.email = email;
+        newAccount.name = name;
+
+        return newAccount;
     }
 
     async ComparePassword(plainPassword: string): Promise<boolean> {
-        return bcrypt.compare(plainPassword, this.password)
+        return bcrypt.compare(plainPassword, this.password);
     }
 }
