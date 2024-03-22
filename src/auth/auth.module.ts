@@ -14,10 +14,13 @@ import { JwtStrategy } from './guardstrategies/jwt';
     TypeOrmModule.forFeature([Account]),
     PassportModule.register({session: true}),
     JwtModule.register({
-      secret: '' + process.env.JWT_SECRET,
+      secret: `${process.env.JWT_SECRET}`,
       signOptions: {
         expiresIn: '1h',
         algorithm: 'HS384',
+      },
+      verifyOptions: {
+        algorithms: ['HS384'],
       },
     })
   ],

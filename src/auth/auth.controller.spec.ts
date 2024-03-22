@@ -5,6 +5,7 @@ import { SignupReqDto } from './dto/signup.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { BaseResponse } from '../utils/baseresponse';
 import { createRequest, createResponse } from 'node-mocks-http';
+import { JwtService } from '@nestjs/jwt';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -18,8 +19,14 @@ describe('AuthController', () => {
           provide: AuthService,
           useValue: {
             signup: jest.fn().mockResolvedValue(BaseResponse.CreateAsSuccess<string>(201, 'account created')), 
-            signJwtPayload: jest.fn().mockResolvedValue('signedtoken'),
+            jwtSign: jest.fn().mockResolvedValue('signedtoken'),
             increaseLoginCount: jest.fn(),
+          }
+        },
+        {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn().mockResolvedValue('signedtoken'),
           }
         },
       ],
@@ -53,7 +60,7 @@ describe('AuthController', () => {
 
   describe('verified login', () => {
     it('should do correct sequence', async() => {
-      let spySignJwt = jest.spyOn(service, 'signJwtPayload');
+      let spySignJwt = jest.spyOn(service, 'jwtSign');
       let spyIncLogin = jest.spyOn(service, 'increaseLoginCount');
 
       const req = createRequest({user: { id: 1, email: 'email', name: 'name', verified: null }});

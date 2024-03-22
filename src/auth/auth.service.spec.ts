@@ -5,6 +5,7 @@ import { Account } from './entities/account.entity';
 import { Repository } from 'typeorm';
 import { BaseResponse } from '../utils/baseresponse';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './dto/jwt-payload.dto';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -130,7 +131,7 @@ describe('AuthService', () => {
   });
   
   it('should sign a new JWT', async () => {
-    const token = await service.signJwtPayload({random: 'payload'});
+    const token = await service.jwtSign(new JwtPayload(1, 'email', 'name', true));
     expect(token).toEqual(expect.any(String));
   });
 });

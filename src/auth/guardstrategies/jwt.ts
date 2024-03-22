@@ -1,23 +1,35 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthGuard, PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
+import { ExtractJwt, JwtFromRequestFunction, Strategy } from 'passport-jwt';
+import { AuthGuard, PassportStrategy } from '@nestjs/passport';
+import { JwtPayload } from '../dto/jwt-payload.dto';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
 
+const extractJwtFromCookie: JwtFromRequestFunction = request => {
+  return request.signedCookies['token']!;
+};
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        extractJwtFromCookie,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
+      secretOrKey: `${process.env.JWT_SECRET}`,
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET,
+      passReqToCallback: false,
     });
   }
 
-  async validate(payload: any) {
-    // payload schema: {id: number, email: string, name: string, verified: boolean}
-    // TODO: should return user object for use on user endpoints
-    return { userId: payload.sub, username: payload.username };
+  /**
+   * 
+   * @param payload JwtPayload
+   * @returns JwtPayload object
+   */
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
+    return payload;
   }
 }

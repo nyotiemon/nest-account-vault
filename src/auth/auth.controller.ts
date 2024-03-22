@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpException, HttpStatus, HttpCode, UseGuards,
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupReqDto } from './dto/signup.dto';
+import { JwtPayload } from './dto/jwt-payload.dto';
 import { Account } from './entities/account.entity';
 import { LocalAuthGuard } from './guardstrategies/local';
 import { GoogleAuthGuard } from './guardstrategies/google';
@@ -38,8 +39,8 @@ export class AuthController {
     let account = request.user as Account;
     
     // generate JWT token
-    let payload = {id: account.id, email: account.email, name: account.name, verified: account.verified != null};
-    let token = await this.service.signJwtPayload(payload);
+    let payload = new JwtPayload(account.id, account.email, account.name, account.verified != null);
+    let token = await this.service.jwtSign(payload);
 
     // increase login count before ending
     await this.service.increaseLoginCount(account);

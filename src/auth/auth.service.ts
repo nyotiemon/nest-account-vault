@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { BaseResponse } from '../utils/baseresponse';
 import { Account } from './entities/account.entity';
 import { Profile } from 'passport-google-oauth20';
+import { JwtPayload } from './dto/jwt-payload.dto';
 
 @Injectable()
 export class AuthService {
@@ -87,10 +88,15 @@ export class AuthService {
 
   /**
    * Sign a payload and return signed token
-   * @param payload a plain object
-   * @returns token string
+   * @param payload JwtPayload
+   * @returns signed token string
    */
-  async signJwtPayload(payload: object): Promise<string> {
-    return this.jwt.sign(payload);
+  async jwtSign(payload: JwtPayload): Promise<string> {
+    // bug in jwtService didn't sign with secret supplied in module
+    return this.jwt.sign(payload.toPlainObject(), {secret: `${process.env.JWT_SECRET}`});
+  }
+
+  async jwtVerify(token: string): Promise<JwtPayload> {
+    return this.jwt.verify(token);
   }
 }
